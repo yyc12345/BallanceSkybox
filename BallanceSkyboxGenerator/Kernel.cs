@@ -8,15 +8,15 @@ namespace BallanceSkyboxGenerator {
 
         static readonly int BK_SIZE = 512;
 
-        public static void ConvertKernel(string img_origin_str, string storage_folder) {
+        public static void ConvertKernel(BitmapDataDeliver deliver) {
             //open origin file
-            var img_origin = new Bitmap(img_origin_str);
+            var img_origin = new Bitmap(deliver.origin);
             //open saved file
-            var img_back = new Bitmap(storage_folder + "Sky_A_Back.BMP", BK_SIZE, BK_SIZE);
-            var img_front = new Bitmap(storage_folder + "Sky_A_Front.BMP", BK_SIZE, BK_SIZE);
-            var img_left = new Bitmap(storage_folder + "Sky_A_Left.BMP", BK_SIZE, BK_SIZE);
-            var img_right = new Bitmap(storage_folder + "Sky_A_Right.BMP", BK_SIZE, BK_SIZE);
-            var img_down = new Bitmap(storage_folder + "Sky_A_Down.BMP", BK_SIZE, BK_SIZE);
+            var img_back = new Bitmap(deliver.back, BK_SIZE, BK_SIZE);
+            var img_front = new Bitmap(deliver.front, BK_SIZE, BK_SIZE);
+            var img_left = new Bitmap(deliver.left, BK_SIZE, BK_SIZE);
+            var img_right = new Bitmap(deliver.right, BK_SIZE, BK_SIZE);
+            var img_down = new Bitmap(deliver.down, BK_SIZE, BK_SIZE);
 
             int img_origin_width = img_origin.Width;
             int img_origin_height = img_origin.Height;
@@ -29,8 +29,8 @@ namespace BallanceSkyboxGenerator {
             double shadow_x = 0;
             double shadow_y = 0;
 
-            Vector basePos = new Vector(-1.0, -1.0, -1.0);
-            Vector offset = new Vector(0, 0, 0);
+            Vector basePos;
+            Vector offset;
 
             void ClearData() {
                 heading = 0;
@@ -41,72 +41,23 @@ namespace BallanceSkyboxGenerator {
             }
 
             //down
+            ClearData();
+            basePos = new Vector(-1.0, 1.0, -1.0);
             for (int x = 0; x < BK_SIZE; x++) {
                 for (int y = 0; y < BK_SIZE; y++) {
-                    offset.Y = 2.0 * ((double)x / (double)BK_SIZE);
-                    offset.X = 2.0 * ((double)y / (double)BK_SIZE);
+                    offset.X = 2.0 * ((double)x / (double)BK_SIZE);
+                    offset.Y = -2.0 * ((double)y / (double)BK_SIZE);
                     CalcAngle(basePos + offset, ref heading, ref tilt);
                     CalcShadowPos(circle, heading, tilt, ref shadow_x, ref shadow_y);
 
                     shadow_x += central_x;
                     shadow_y += central_y;
-                    ConfirmPos(ref shadow_x, ref shadow_y, img_origin_width, img_origin_height);
+                    ClampPos(ref shadow_x, ref shadow_y, img_origin_width, img_origin_height);
                     img_down.SetPixel(x, y, img_origin.GetPixel(shadow_x, shadow_y));
                 }
             }
 
             //front
-            ClearData();
-            basePos = new Vector(-1.0, -1.0, 1.0);
-            for (int x = 0; x < BK_SIZE; x++) {
-                for (int y = 0; y < BK_SIZE; y++) {
-                    offset.Y = 2.0 * ((double)x / (double)BK_SIZE);
-                    offset.Z = -2.0 * ((double)y / (double)BK_SIZE);
-                    CalcAngle(basePos + offset, ref heading, ref tilt);
-                    CalcShadowPos(circle, heading, tilt, ref shadow_x, ref shadow_y);
-
-                    shadow_x += central_x;
-                    shadow_y += central_y;
-                    ConfirmPos(ref shadow_x, ref shadow_y, img_origin_width, img_origin_height);
-                    img_front.SetPixel(x, y, img_origin.GetPixel(shadow_x, shadow_y));
-                }
-            }
-
-            //back
-            ClearData();
-            basePos = new Vector(1.0, 1.0, 1.0);
-            for (int x = 0; x < BK_SIZE; x++) {
-                for (int y = 0; y < BK_SIZE; y++) {
-                    offset.Y = -2.0 * ((double)x / (double)BK_SIZE);
-                    offset.Z = -2.0 * ((double)y / (double)BK_SIZE);
-                    CalcAngle(basePos + offset, ref heading, ref tilt);
-                    CalcShadowPos(circle, heading, tilt, ref shadow_x, ref shadow_y);
-
-                    shadow_x += central_x;
-                    shadow_y += central_y;
-                    ConfirmPos(ref shadow_x, ref shadow_y, img_origin_width, img_origin_height);
-                    img_back.SetPixel(x, y, img_origin.GetPixel(shadow_x, shadow_y));
-                }
-            }
-
-            //left
-            ClearData();
-            basePos = new Vector(1.0, -1.0, 1.0);
-            for (int x = 0; x < BK_SIZE; x++) {
-                for (int y = 0; y < BK_SIZE; y++) {
-                    offset.X = -2.0 * ((double)x / (double)BK_SIZE);
-                    offset.Z = -2.0 * ((double)y / (double)BK_SIZE);
-                    CalcAngle(basePos + offset, ref heading, ref tilt);
-                    CalcShadowPos(circle, heading, tilt, ref shadow_x, ref shadow_y);
-
-                    shadow_x += central_x;
-                    shadow_y += central_y;
-                    ConfirmPos(ref shadow_x, ref shadow_y, img_origin_width, img_origin_height);
-                    img_left.SetPixel(x, y, img_origin.GetPixel(shadow_x, shadow_y));
-                }
-            }
-
-            //right
             ClearData();
             basePos = new Vector(-1.0, 1.0, 1.0);
             for (int x = 0; x < BK_SIZE; x++) {
@@ -118,7 +69,58 @@ namespace BallanceSkyboxGenerator {
 
                     shadow_x += central_x;
                     shadow_y += central_y;
-                    ConfirmPos(ref shadow_x, ref shadow_y, img_origin_width, img_origin_height);
+                    ClampPos(ref shadow_x, ref shadow_y, img_origin_width, img_origin_height);
+                    img_front.SetPixel(x, y, img_origin.GetPixel(shadow_x, shadow_y));
+                }
+            }
+
+            //back
+            ClearData();
+            basePos = new Vector(1.0, -1.0, 1.0);
+            for (int x = 0; x < BK_SIZE; x++) {
+                for (int y = 0; y < BK_SIZE; y++) {
+                    offset.X = -2.0 * ((double)x / (double)BK_SIZE);
+                    offset.Z = -2.0 * ((double)y / (double)BK_SIZE);
+                    CalcAngle(basePos + offset, ref heading, ref tilt);
+                    CalcShadowPos(circle, heading, tilt, ref shadow_x, ref shadow_y);
+
+                    shadow_x += central_x;
+                    shadow_y += central_y;
+                    ClampPos(ref shadow_x, ref shadow_y, img_origin_width, img_origin_height);
+                    img_back.SetPixel(x, y, img_origin.GetPixel(shadow_x, shadow_y));
+                }
+            }
+
+            //left
+            ClearData();
+            basePos = new Vector(-1.0, -1.0, 1.0);
+            for (int x = 0; x < BK_SIZE; x++) {
+                for (int y = 0; y < BK_SIZE; y++) {
+                    offset.Y = 2.0 * ((double)x / (double)BK_SIZE);
+                    offset.Z = -2.0 * ((double)y / (double)BK_SIZE);
+                    CalcAngle(basePos + offset, ref heading, ref tilt);
+                    CalcShadowPos(circle, heading, tilt, ref shadow_x, ref shadow_y);
+
+                    shadow_x += central_x;
+                    shadow_y += central_y;
+                    ClampPos(ref shadow_x, ref shadow_y, img_origin_width, img_origin_height);
+                    img_left.SetPixel(x, y, img_origin.GetPixel(shadow_x, shadow_y));
+                }
+            }
+
+            //right
+            ClearData();
+            basePos = new Vector(1.0, 1.0, 1.0);
+            for (int x = 0; x < BK_SIZE; x++) {
+                for (int y = 0; y < BK_SIZE; y++) {
+                    offset.Y = -2.0 * ((double)x / (double)BK_SIZE);
+                    offset.Z = -2.0 * ((double)y / (double)BK_SIZE);
+                    CalcAngle(basePos + offset, ref heading, ref tilt);
+                    CalcShadowPos(circle, heading, tilt, ref shadow_x, ref shadow_y);
+
+                    shadow_x += central_x;
+                    shadow_y += central_y;
+                    ClampPos(ref shadow_x, ref shadow_y, img_origin_width, img_origin_height);
                     img_right.SetPixel(x, y, img_origin.GetPixel(shadow_x, shadow_y));
                 }
             }
@@ -161,10 +163,10 @@ namespace BallanceSkyboxGenerator {
             var percent_tilt = tilt_angle / (3 * Math.PI / 4);
             var radius = percent_tilt * full_radius;
             shadow_x = radius * Math.Cos(heading_angle);
-            shadow_y = radius * Math.Sin(heading_angle);
+            shadow_y = -radius * Math.Sin(heading_angle); // y need a reversion, because the +y is different between image and the coordinate system used in this app.
         }
 
-        static void ConfirmPos(ref double x, ref double y, int max_width, int max_height) {
+        static void ClampPos(ref double x, ref double y, int max_width, int max_height) {
             if (x < 0) x = 0;
             if (y < 0) y = 0;
             if (x > max_width - 1) x = max_width - 1;
@@ -172,4 +174,10 @@ namespace BallanceSkyboxGenerator {
         }
 
     }
+
+    public struct BitmapDataDeliver {
+        public string origin;
+        public string back, front, left, right, down;
+    }
+
 }

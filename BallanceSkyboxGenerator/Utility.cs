@@ -88,7 +88,7 @@ namespace BallanceSkyboxGenerator {
         public ColorRGB GetPixel(double x, double y) {
             //return GetPixel((int)x, (int)y);
             int basex = (int)x, basey = (int)y;
-            if (basex == Width - 1 || basey == Height - 1) return GetPixel(basex, basey);
+            //if (basex == Width - 1 || basey == Height - 1) return GetPixel(basex, basey); // this if will cause sharp edge, we clamp it in GetPixel(int, int) to avoid this.
 
             var x_percentage = x - (double)basex;
             var y_percentage = y - (double)basey;
@@ -100,6 +100,11 @@ namespace BallanceSkyboxGenerator {
         }
 
         public ColorRGB GetPixel(int x, int y) {
+            if (x < 0) x = 0;
+            if (y < 0) y = 0;
+            if (x >= Width) x = Width - 1;
+            if (y >= Height) y = Height - 1;
+
             int offset = y * realImage.Stride + x * PIXEL_SIZE;
             //BGR -> RGB
             return new ColorRGB(
