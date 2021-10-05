@@ -125,32 +125,17 @@ namespace BallanceSkyboxViewer {
 
         private void func_fileOpen(object sender, MouseButtonEventArgs e) {
             var file = DialogUtils.OpenFileDialog();
-            if (file == "") return;
+            if (file == null) return;
 
-            switch (((Border)sender).Name) {
-                case nameof(uiImageBack):
-                    imageManager.LoadToBtn(file, SkyboxFace.Back);
-                    break;
-                case nameof(uiImageDown):
-                    imageManager.LoadToBtn(file, SkyboxFace.Down);
-                    break;
-                case nameof(uiImageFront):
-                    imageManager.LoadToBtn(file, SkyboxFace.Front);
-                    break;
-                case nameof(uiImageLeft):
-                    imageManager.LoadToBtn(file, SkyboxFace.Left);
-                    break;
-                case nameof(uiImageRight):
-                    imageManager.LoadToBtn(file, SkyboxFace.Right);
-                    break;
-            }
-
-            updateBtnImage();
-            updateBtnTooltip();
+            realFileLoader(sender, file);
         }
 
         private void func_fileDrop(object sender, DragEventArgs e) {
             var cache = (System.Array)e.Data.GetData(DataFormats.FileDrop);
+            realFileLoader(sender, cache);
+        }
+
+        void realFileLoader(object sender, System.Array cache) {
             if (cache.Length == 1) {
                 // only one file
                 var file = cache.GetValue(0).ToString();
