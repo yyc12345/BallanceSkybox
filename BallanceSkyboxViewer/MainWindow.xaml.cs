@@ -21,25 +21,26 @@ namespace BallanceSkyboxViewer {
     public partial class MainWindow : Window {
         public MainWindow() {
             InitializeComponent();
+
+            imageManager = new SkyboxImageManager();
         }
 
-        private double angle_fov = 180; //from 0 -> 180
-        private double angle_flatRotate = 0; //from 0 -> 360
+        #region camera processor
 
         private double degToRad(double deg) {
             return deg * Math.PI * 2 / 360;
         }
 
         private void calcLookAndUpDirection(out Vector3D lookDirection, out Vector3D upDirection) {
-            double cache_xy = Math.Sin(degToRad(angle_fov));
-            lookDirection = new Vector3D(cache_xy * Math.Cos(degToRad(angle_flatRotate)), cache_xy * Math.Sin(degToRad(angle_flatRotate)), Math.Cos(degToRad(angle_fov)));
+            double cache_xy = Math.Sin(degToRad(tilt_angle));
+            lookDirection = new Vector3D(cache_xy * Math.Cos(degToRad(heading_angle)), cache_xy * Math.Sin(degToRad(heading_angle)), Math.Cos(degToRad(tilt_angle)));
 
-            cache_xy = Math.Sin(degToRad(angle_fov - 90));
-            upDirection = new Vector3D(cache_xy * Math.Cos(degToRad(angle_flatRotate)), cache_xy * Math.Sin(degToRad(angle_flatRotate)), Math.Cos(degToRad(angle_fov - 90)));
+            cache_xy = Math.Sin(degToRad(tilt_angle - 90));
+            upDirection = new Vector3D(cache_xy * Math.Cos(degToRad(heading_angle)), cache_xy * Math.Sin(degToRad(heading_angle)), Math.Cos(degToRad(tilt_angle - 90)));
         }
 
-
-        #region event processor
+        double tilt_angle = 180; //from 0 -> 180
+        double heading_angle = 0; //from 0 -> 360
         bool enableMove = false;
         bool initPre = true;
         Point prePosition = new Point(0, 0);
@@ -64,7 +65,7 @@ namespace BallanceSkyboxViewer {
             var cache2 = e.GetPosition(this.uiDisplay);
             var offset = cache2 - prePosition;
 
-            double simulation_fov = angle_fov - offset.Y * rotateSpeed, simulation_rotate = angle_flatRotate + offset.X * rotateSpeed;
+            double simulation_fov = tilt_angle - offset.Y * rotateSpeed, simulation_rotate = heading_angle + offset.X * rotateSpeed;
             while (simulation_rotate > 360)
                 simulation_rotate -= 360;
             while (simulation_rotate < 0)
@@ -74,8 +75,8 @@ namespace BallanceSkyboxViewer {
             if (simulation_fov < 0) simulation_fov = 0;
 
             //write angle
-            angle_flatRotate = simulation_rotate;
-            angle_fov = simulation_fov;
+            heading_angle = simulation_rotate;
+            tilt_angle = simulation_fov;
 
             //update pre position
             prePosition.X = cache2.X;
@@ -94,69 +95,117 @@ namespace BallanceSkyboxViewer {
 
         #endregion
 
-        //back down front left right
-        string[] fileArray = new string[5] {
-            "", "", "", "", ""
-        };
+        #region image processor
 
-        private void updateFileTooltip() {
-            uiDragBack.ToolTip = fileArray[0];
-            uiDragDown.ToolTip = fileArray[1];
-            uiDragFront.ToolTip = fileArray[2];
-            uiDragLeft.ToolTip = fileArray[3];
-            uiDragRight.ToolTip = fileArray[4];
+        private SkyboxImageManager imageManager;
+
+        void updateBtnImage() {
+            uiImgBtnBrush_Back.ImageSource = imageManager.BtnBack;
+            uiImgBtnBrush_Down.ImageSource = imageManager.BtnDown;
+            uiImgBtnBrush_Front.ImageSource = imageManager.BtnFront;
+            uiImgBtnBrush_Left.ImageSource = imageManager.BtnLeft;
+            uiImgBtnBrush_Right.ImageSource = imageManager.BtnRight;
+        }
+
+        void update3DImage() {
+            ui3DBrush_Back.ImageSource = imageManager.ThreeDBack;
+            ui3DBrush_Down.ImageSource = imageManager.ThreeDDown;
+            ui3DBrush_Front.ImageSource = imageManager.ThreeDFront;
+            ui3DBrush_Left.ImageSource = imageManager.ThreeDLeft;
+            ui3DBrush_Right.ImageSource = imageManager.ThreeDRight;
+        }
+
+        void updateBtnTooltip() {
+            uiImageBack.ToolTip = imageManager.FilePathBack;
+            uiImageDown.ToolTip = imageManager.FilePathDown;
+            uiImageFront.ToolTip = imageManager.FilePathFront;
+            uiImageLeft.ToolTip = imageManager.FilePathLeft;
+            uiImageRight.ToolTip = imageManager.FilePathRight;
+        }
+
+        private void func_fileOpen(object sender, MouseButtonEventArgs e) {
+            var file = DialogUtils.OpenFileDialog();
+            if (file == "") return;
+
+            switch (((Border)sender).Name) {
+                case nameof(uiImageBack):
+                    imageManager.LoadToBtn(file, SkyboxFace.Back);
+                    break;
+                case nameof(uiImageDown):
+                    imageManager.LoadToBtn(file, SkyboxFace.Down);
+                    break;
+                case nameof(uiImageFront):
+                    imageManager.LoadToBtn(file, SkyboxFace.Front);
+                    break;
+                case nameof(uiImageLeft):
+                    imageManager.LoadToBtn(file, SkyboxFace.Left);
+                    break;
+                case nameof(uiImageRight):
+                    imageManager.LoadToBtn(file, SkyboxFace.Right);
+                    break;
+            }
+
+            updateBtnImage();
+            updateBtnTooltip();
         }
 
         private void func_fileDrop(object sender, DragEventArgs e) {
             var cache = (System.Array)e.Data.GetData(DataFormats.FileDrop);
-            if (cache.Length == 0) return;
-            var file = cache.GetValue(0).ToString();
+            if (cache.Length == 1) {
+                // only one file
+                var file = cache.GetValue(0).ToString();
 
-            switch (((Border)sender).Name) {
-                case "uiDragBack":
-                    fileArray[0] = file;
-                    break;
-                case "uiDragDown":
-                    fileArray[1] = file;
-                    break;
-                case "uiDragFront":
-                    fileArray[2] = file;
-                    break;
-                case "uiDragLeft":
-                    fileArray[3] = file;
-                    break;
-                case "uiDragRight":
-                    fileArray[4] = file;
-                    break;
-            }
+                switch (((Border)sender).Name) {
+                    case nameof(uiImageBack):
+                        imageManager.LoadToBtn(file, SkyboxFace.Back);
+                        break;
+                    case nameof(uiImageDown):
+                        imageManager.LoadToBtn(file, SkyboxFace.Down);
+                        break;
+                    case nameof(uiImageFront):
+                        imageManager.LoadToBtn(file, SkyboxFace.Front);
+                        break;
+                    case nameof(uiImageLeft):
+                        imageManager.LoadToBtn(file, SkyboxFace.Left);
+                        break;
+                    case nameof(uiImageRight):
+                        imageManager.LoadToBtn(file, SkyboxFace.Right);
+                        break;
+                }
 
-            updateFileTooltip();
+            } else if (cache.Length == 5) {
+                // 5 files, a series
+                if (SkyboxFileMatch.IsLegal5Files(cache)) {
+                    var f = SkyboxFileMatch.Get5Files(cache);
+                    imageManager.LoadToBtn(f[0], SkyboxFace.Back);
+                    imageManager.LoadToBtn(f[1], SkyboxFace.Down);
+                    imageManager.LoadToBtn(f[2], SkyboxFace.Front);
+                    imageManager.LoadToBtn(f[3], SkyboxFace.Left);
+                    imageManager.LoadToBtn(f[4], SkyboxFace.Right);
+                } else {
+                    MessageBox.Show("Dropped bitmap series is illgal series.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
 
+            } // skip
+
+            updateBtnImage();
+            updateBtnTooltip();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e) {
-            for (int i = 0; i < 5; i++) {
-                if (fileArray[i] == "") {
-                    MessageBox.Show("Empty file!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-            }
+        private void func_fileDropCheck(object sender, DragEventArgs e) {
+            // only accept one file or 5 file
+            if (e.Data.GetDataPresent(DataFormats.FileDrop)) {
+                var arr = (System.Array)e.Data.GetData(DataFormats.FileDrop);
+                if (arr.Length == 1 || arr.Length == 5) e.Effects = DragDropEffects.Link;
+                else e.Effects = DragDropEffects.None;
+            } else e.Effects = DragDropEffects.None;
+        }
 
-            BitmapImage loadImage(Uri a) {
-                var cache = new BitmapImage();
-                cache.BeginInit();
-                cache.CacheOption = BitmapCacheOption.OnLoad;
-                cache.UriSource = a;
-                cache.EndInit();
-                return cache;
-            }
-
+        private void func_Apply(object sender, RoutedEventArgs e) {
             try {
-                uiBackBrush.ImageSource = loadImage(new Uri(fileArray[0], UriKind.Absolute));
-                uiBottomBrush.ImageSource = loadImage(new Uri(fileArray[1], UriKind.Absolute));
-                uiFrontBrush.ImageSource = loadImage(new Uri(fileArray[2], UriKind.Absolute));
-                uiLeftBrush.ImageSource = loadImage(new Uri(fileArray[3], UriKind.Absolute));
-                uiRightBrush.ImageSource = loadImage(new Uri(fileArray[4], UriKind.Absolute));
+                imageManager.ReloadToThreeD();
+                updateBtnImage();
+                update3DImage();
 
                 MessageBox.Show("Done");
             } catch (Exception ee) {
@@ -164,5 +213,8 @@ namespace BallanceSkyboxViewer {
             }
 
         }
+
+        #endregion
+
     }
 }

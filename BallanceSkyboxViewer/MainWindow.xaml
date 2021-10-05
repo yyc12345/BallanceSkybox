@@ -5,30 +5,85 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BallanceSkyboxViewer"
         mc:Ignorable="d"
-        Title="Ballance Skybox Viewer" Height="450" Width="800">
+        Title="Ballance Skybox Viewer" Height="600" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="80"/>
+            <ColumnDefinition Width="auto"/>
         </Grid.ColumnDefinitions>
 
         <StackPanel Orientation="Vertical" Grid.Column="1">
-            <Border x:Name="uiDragBack" BorderThickness="2" Background="Gray" BorderBrush="Black" Width="50" Height="50" HorizontalAlignment="Center" Margin="0,10,0,0" AllowDrop="True" Drop="func_fileDrop">
-                <TextBlock Foreground="White" Text="Back" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Border x:Name="uiImageBack" BorderThickness="2" BorderBrush="Black" Width="50" HorizontalAlignment="Center" Margin="0,10,0,0" AllowDrop="True" Drop="func_fileDrop" DragEnter="func_fileDropCheck" MouseDown="func_fileOpen">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.Background>
+                            <ImageBrush x:Name="uiImgBtnBrush_Back"/>
+                        </Grid.Background>
+                    </Grid>
+                    <TextBlock Grid.Row="1" Text="Back" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
             </Border>
-            <Border x:Name="uiDragDown" BorderThickness="2" Background="Gray" BorderBrush="Black" Width="50" Height="50" HorizontalAlignment="Center" Margin="0,10,0,0" AllowDrop="True" Drop="func_fileDrop">
-                <TextBlock Foreground="White" Text="Down" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Border x:Name="uiImageDown" BorderThickness="2" BorderBrush="Black" Width="50" HorizontalAlignment="Center" Margin="0,10,0,0" AllowDrop="True" Drop="func_fileDrop" DragEnter="func_fileDropCheck" MouseDown="func_fileOpen">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.Background>
+                            <ImageBrush x:Name="uiImgBtnBrush_Down"/>
+                        </Grid.Background>
+                    </Grid>
+                    <TextBlock Grid.Row="1" Text="Down" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
             </Border>
-            <Border x:Name="uiDragFront" BorderThickness="2" Background="Gray" BorderBrush="Black" Width="50" Height="50" HorizontalAlignment="Center" Margin="0,10,0,0" AllowDrop="True" Drop="func_fileDrop">
-                <TextBlock Foreground="White" Text="Front" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Border x:Name="uiImageFront" BorderThickness="2" BorderBrush="Black" Width="50" HorizontalAlignment="Center" Margin="0,10,0,0" AllowDrop="True" Drop="func_fileDrop" DragEnter="func_fileDropCheck" MouseDown="func_fileOpen">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.Background>
+                            <ImageBrush x:Name="uiImgBtnBrush_Front"/>
+                        </Grid.Background>
+                    </Grid>
+                    <TextBlock Grid.Row="1" Text="Front" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
             </Border>
-            <Border x:Name="uiDragLeft" BorderThickness="2" Background="Gray" BorderBrush="Black" Width="50" Height="50" HorizontalAlignment="Center" Margin="0,10,0,0" AllowDrop="True" Drop="func_fileDrop">
-                <TextBlock Foreground="White" Text="Left" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Border x:Name="uiImageLeft" BorderThickness="2" BorderBrush="Black" Width="50" HorizontalAlignment="Center" Margin="0,10,0,0" AllowDrop="True" Drop="func_fileDrop" DragEnter="func_fileDropCheck" MouseDown="func_fileOpen">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.Background>
+                            <ImageBrush x:Name="uiImgBtnBrush_Left"/>
+                        </Grid.Background>
+                    </Grid>
+                    <TextBlock Grid.Row="1" Text="Left" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
             </Border>
-            <Border x:Name="uiDragRight" BorderThickness="2" Background="Gray" BorderBrush="Black" Width="50" Height="50" HorizontalAlignment="Center" Margin="0,10,0,0" AllowDrop="True" Drop="func_fileDrop">
-                <TextBlock Foreground="White" Text="Right" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Border x:Name="uiImageRight" BorderThickness="2" BorderBrush="Black" Width="50" HorizontalAlignment="Center" Margin="0,10,0,0" AllowDrop="True" Drop="func_fileDrop" DragEnter="func_fileDropCheck" MouseDown="func_fileOpen">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.Background>
+                            <ImageBrush x:Name="uiImgBtnBrush_Right"/>
+                        </Grid.Background>
+                    </Grid>
+                    <TextBlock Grid.Row="1" Text="Right" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
             </Border>
-            <Button Content="Apply"  Margin="10,10,10,0" Click="Button_Click"/>
+            <Button Content="Apply" Margin="10,10,10,0" Padding="5" Click="func_Apply"/>
         </StackPanel>
 
         <Viewport3D x:Name="uiDisplay" MouseDown="Viewport3D_MouseDown" MouseMove="Viewport3D_MouseMove" MouseUp="Viewport3D_MouseUp">
@@ -55,7 +110,7 @@
                                 <GeometryModel3D.Material>
                                     <DiffuseMaterial>
                                         <DiffuseMaterial.Brush>
-                                            <ImageBrush x:Name="uiBottomBrush"/>
+                                            <ImageBrush x:Name="ui3DBrush_Down"/>
                                         </DiffuseMaterial.Brush>
                                     </DiffuseMaterial>
                                 </GeometryModel3D.Material>
@@ -71,7 +126,7 @@
                                 <GeometryModel3D.Material>
                                     <DiffuseMaterial>
                                         <DiffuseMaterial.Brush>
-                                            <ImageBrush x:Name="uiFrontBrush"/>
+                                            <ImageBrush x:Name="ui3DBrush_Front"/>
                                         </DiffuseMaterial.Brush>
                                     </DiffuseMaterial>
                                 </GeometryModel3D.Material>
@@ -87,7 +142,7 @@
                                 <GeometryModel3D.Material>
                                     <DiffuseMaterial>
                                         <DiffuseMaterial.Brush>
-                                            <ImageBrush x:Name="uiLeftBrush"/>
+                                            <ImageBrush x:Name="ui3DBrush_Left"/>
                                         </DiffuseMaterial.Brush>
                                     </DiffuseMaterial>
                                 </GeometryModel3D.Material>
@@ -103,7 +158,7 @@
                                 <GeometryModel3D.Material>
                                     <DiffuseMaterial>
                                         <DiffuseMaterial.Brush>
-                                            <ImageBrush x:Name="uiRightBrush"/>
+                                            <ImageBrush x:Name="ui3DBrush_Right"/>
                                         </DiffuseMaterial.Brush>
                                     </DiffuseMaterial>
                                 </GeometryModel3D.Material>
@@ -119,7 +174,7 @@
                                 <GeometryModel3D.Material>
                                     <DiffuseMaterial>
                                         <DiffuseMaterial.Brush>
-                                            <ImageBrush x:Name="uiBackBrush"/>
+                                            <ImageBrush x:Name="ui3DBrush_Back"/>
                                         </DiffuseMaterial.Brush>
                                     </DiffuseMaterial>
                                 </GeometryModel3D.Material>
